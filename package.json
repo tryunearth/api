@@ -1,0 +1,18 @@
+{
+  "name": "unearth-server",
+  "version": "1.0.0",
+  "description": "Backend server serving the REST API",
+  "main": "index.js",
+  "author": "Cedric Amaya <amaya.cedric@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  },
+  "engines": {
+    "node": "12.16.x",
+    "yarn": "1.x"
+  }
+}
