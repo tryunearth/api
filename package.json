@@ -6,10 +6,22 @@
   "author": "Cedric Amaya <amaya.cedric@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.17.1"
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "knex": "^0.20.13",
+    "pg": "^7.18.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
+  },
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "db": "node_modules/.bin/knex",
+    "db:rollback": "yarn db migrate:rollback --all",
+    "db:migrate": "yarn db migrate:latest",
+    "db:seed": "yarn db seed:run",
+    "db:reset": "yarn db:rollback && yarn db:migrate && yarn db:seed"
   },
   "engines": {
     "node": "12.16.x",
