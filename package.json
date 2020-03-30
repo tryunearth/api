@@ -15,8 +15,8 @@
     "nodemon": "^2.0.2"
   },
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
     "db": "node_modules/.bin/knex",
     "db:rollback": "yarn db migrate:rollback --all",
     "db:migrate": "yarn db migrate:latest",
