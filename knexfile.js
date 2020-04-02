@@ -12,6 +12,17 @@ module.exports = {
       directory: './src/database/seeds',
     },
   },
+  testing: {
+    client: 'pg',
+    useNullAsDefault: true,
+    connection: process.env.TEST_DATABASE_URL,
+    migrations: {
+      directory: './src/database/migrations',
+    },
+    seeds: {
+      directory: './src/database/seeds',
+    },
+  },
   production: {
     client: 'pg',
     useNullAsDefault: true,
