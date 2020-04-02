@@ -12,9 +12,13 @@
     "pg": "^7.18.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.2"
+    "jest": "^25.2.4",
+    "nodemon": "^2.0.2",
+    "supertest": "^4.0.2"
   },
   "scripts": {
+    "test": "NODE_ENV=development jest --runInBand",
+    "test:watch": "yarn test --watch-all",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "db": "node_modules/.bin/knex",
@@ -26,5 +30,8 @@
   "engines": {
     "node": "12.16.x",
     "yarn": "1.x"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }
