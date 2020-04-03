@@ -11,7 +11,15 @@ const readUser = async userId => {
     .first()
 }
 
-const createUser = async data => {}
+const createUser = async data => {
+  await db('user')
+    .insert(data)
+    .returning(
+      process.env.NODE_ENV === 'production'
+        ? ['id', 'username', 'email', 'frequency']
+        : '*',
+    )
+}
 
 const updateUser = async (userId, updates) => {
   await db('user')
@@ -27,6 +35,7 @@ const removeUser = async userId => {
 
 module.exports = {
   readUser,
+  createUser,
   updateUser,
   removeUser,
 }
