@@ -12,26 +12,18 @@ const getThings = async (req, res, next) => {
   //        used to connect related resources
   // const { include } = req.query
 
-  try {
-    const things = await browseThings(user.id)
-    res.status(200).json({ things })
-  } catch (error) {
-    return next(error.toString())
-  }
+  const things = await browseThings(user.id)
+  res.status(200).json({ things })
 }
 
 const postThing = async (req, res, next) => {
   const user = { id: 'xmeax' }
-  try {
-    const data = req.body
-    // check thing attributes here
+  const data = req.body
+  // check thing attributes here
 
-    const thing = await createThing(user.id, data)
-    res.status(201).json({ thing })
-    return next()
-  } catch (error) {
-    return next(error.toString())
-  }
+  const thing = await createThing(user.id, data)
+  res.status(201).json({ thing })
+  return next()
 }
 
 const patchThing = async (req, res, next) => {
@@ -57,44 +49,36 @@ const patchThing = async (req, res, next) => {
     }
   }
 
-  try {
-    const updated = await updateThing(user.id, id, data)
-    if (!updated) {
-      const error = {
-        status: 404,
-        message:
-          'Could not find any thing with the given id associated with the authorized user.',
-      }
-      res.status(error.status).json({ error })
-      return next()
+  const updated = await updateThing(user.id, id, data)
+  if (!updated) {
+    const error = {
+      status: 404,
+      message:
+        'Could not find any thing with the given id associated with the authorized user.',
     }
-    res.status(204).end()
+    res.status(error.status).json({ error })
     return next()
-  } catch (error) {
-    return next(error.toString())
   }
+  res.status(204).end()
+  return next()
 }
 
 const deleteThing = async (req, res, next) => {
   const user = { id: 'xmeax' }
   const { id } = req.params
 
-  try {
-    const deleted = await removeThing(user.id, id)
-    if (!deleted) {
-      const error = {
-        status: 404,
-        message:
-          'Could not find any thing with the given id associated with the authorized user.',
-      }
-      res.status(error.status).json({ error })
-      return next()
+  const deleted = await removeThing(user.id, id)
+  if (!deleted) {
+    const error = {
+      status: 404,
+      message:
+        'Could not find any thing with the given id associated with the authorized user.',
     }
-    res.status(204).end()
+    res.status(error.status).json({ error })
     return next()
-  } catch (error) {
-    return next(error.toString())
   }
+  res.status(204).end()
+  return next()
 }
 
 module.exports = { getThings, postThing, patchThing, deleteThing }

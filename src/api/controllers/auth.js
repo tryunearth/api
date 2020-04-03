@@ -6,13 +6,9 @@ const {
 
 const getUser = async (req, res, next) => {
   const u = { id: 'xmeax' }
-  try {
-    const user = await readUser(u.id)
-    res.status(200).json({ user })
-    return next()
-  } catch (error) {
-    return next(error.toString())
-  }
+  const user = await readUser(u.id)
+  res.status(200).json({ user })
+  return next()
 }
 
 const patchUser = async (req, res, next) => {
@@ -48,24 +44,16 @@ const patchUser = async (req, res, next) => {
     }
   }
 
-  try {
-    await updateUser(u.id, data)
-    res.status(204).end()
-    return next()
-  } catch (error) {
-    return next(error.toString())
-  }
+  await updateUser(u.id, data)
+  res.status(204).end()
+  return next()
 }
 
 const deleteUser = async (req, res, next) => {
   const u = { id: 'xmeax' }
-  try {
-    await deleteUser(u.id)
-    res.status(204).end()
-    return next()
-  } catch (error) {
-    return next(error.toString())
-  }
+  await removeUser(u.id)
+  res.status(204).end()
+  return next()
 }
 
 const oauthDance = async (req, res, next) => {

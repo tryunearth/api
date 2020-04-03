@@ -12,22 +12,18 @@ const getTag = async (req, res, next) => {
 
   const { id } = req.params
 
-  try {
-    const tag = await readTagById(user.id, id)
-    if (!tag) {
-      const error = {
-        status: 404,
-        message:
-          'Could not find any tag with the given id associated with the authorized user.',
-      }
-      res.status(error.status).json({ error })
-      return next()
+  const tag = await readTagById(user.id, id)
+  if (!tag) {
+    const error = {
+      status: 404,
+      message:
+        'Could not find any tag with the given id associated with the authorized user.',
     }
-    res.status(200).json({ tag })
+    res.status(error.status).json({ error })
     return next()
-  } catch (error) {
-    return next(error.toString())
   }
+  res.status(200).json({ tag })
+  return next()
 }
 
 const getTags = async (req, res, next) => {
@@ -35,13 +31,9 @@ const getTags = async (req, res, next) => {
   const user = { id: 'xmeax' }
   req.user = user
 
-  try {
-    const tags = await browseTags(user.id)
-    res.status(200).json({ tags })
-    return next()
-  } catch (error) {
-    return next(error.toString())
-  }
+  const tags = await browseTags(user.id)
+  res.status(200).json({ tags })
+  return next()
 }
 
 const postTag = async (req, res, next) => {
@@ -61,13 +53,9 @@ const postTag = async (req, res, next) => {
     return next()
   }
 
-  try {
-    const tag = await createTag(user.id, name)
-    res.status(201).json({ tag })
-    return next()
-  } catch (error) {
-    return next(error.toString())
-  }
+  const tag = await createTag(user.id, name)
+  res.status(201).json({ tag })
+  return next()
 }
 
 const deleteTag = async (req, res, next) => {
@@ -77,22 +65,18 @@ const deleteTag = async (req, res, next) => {
 
   const { id } = req.params
 
-  try {
-    const deleted = await removeTag(user.id, id)
-    if (!deleted) {
-      const error = {
-        status: 404,
-        message:
-          'Could not find any tag with the given id associated with the authorized user.',
-      }
-      res.status(error.status).json({ error })
-      return next()
+  const deleted = await removeTag(user.id, id)
+  if (!deleted) {
+    const error = {
+      status: 404,
+      message:
+        'Could not find any tag with the given id associated with the authorized user.',
     }
-    res.status(204).end()
+    res.status(error.status).json({ error })
     return next()
-  } catch (error) {
-    return next(error.toString())
   }
+  res.status(204).end()
+  return next()
 }
 
 module.exports = {
