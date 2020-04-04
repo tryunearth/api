@@ -1,36 +1,40 @@
 const router = require('express').Router()
-const { auth, healthCheck, tags, things } = require('../controllers')
+const {
+  AuthController,
+  HealthCheckController,
+  TagsController,
+  ThingsController,
+} = require('../controllers')
 const asyncHandler = require('../helpers/async-handler')
 
 /**
  * Health Check
  */
-router.get('/status', healthCheck.getStatus)
+router.get('/status', HealthCheckController.getStatus)
 
 /**
  * Auth
  */
-// router.post('/auth/login', asyncHandler(auth.oauthDance))
+// router.post('/auth/login', asyncHandler(AuthController.oauthDance))
 
-router.get('/auth/me', asyncHandler(auth.getUser))
-router.patch('/auth/me', asyncHandler(auth.patchUser))
-router.delete('/auth/me', asyncHandler(auth.deleteUser))
+router.get('/auth/me', asyncHandler(AuthController.getUser))
+router.patch('/auth/me', asyncHandler(AuthController.patchUser))
+router.delete('/auth/me', asyncHandler(AuthController.deleteUser))
 
 /**
  * Tags
  */
-// router.get('/tags', tags.getTags)
-router.get('/tags', asyncHandler(tags.getTags))
-router.get('/tags/:id', asyncHandler(tags.getTag))
-router.post('/tags', asyncHandler(tags.postTag))
-router.delete('/tags/:id', asyncHandler(tags.deleteTag))
+router.get('/tags', asyncHandler(TagsController.getTags))
+router.get('/tags/:id', asyncHandler(TagsController.getTag))
+router.post('/tags', asyncHandler(TagsController.postTag))
+router.delete('/tags/:id', asyncHandler(TagsController.deleteTag))
 
 /**
  * Things
  */
-router.get('/things', asyncHandler(things.getThings))
-router.post('/things', asyncHandler(things.postThing))
-router.patch('/things/:id', asyncHandler(things.patchThing))
-router.delete('/things/:id', asyncHandler(things.deleteThing))
+router.get('/things', asyncHandler(ThingsController.getThings))
+router.post('/things', asyncHandler(ThingsController.postThing))
+router.patch('/things/:id', asyncHandler(ThingsController.patchThing))
+router.delete('/things/:id', asyncHandler(ThingsController.deleteThing))
 
 module.exports = router

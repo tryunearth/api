@@ -1,11 +1,11 @@
-const authController = require('./auth')
-const healthCheckController = require('./health-check')
-const tagsController = require('./tags')
-const thingsController = require('./things')
+const AuthController = require('./auth')
+const HealthCheckController = require('./health-check')
+const TagsController = require('./tags')
+const ThingsController = require('./things')
 
 module.exports = {
-  auth: authController,
-  healthCheck: healthCheckController,
-  tags: tagsController,
-  things: thingsController,
+  AuthController,
+  HealthCheckController,
+  TagsController,
+  ThingsController,
 }
