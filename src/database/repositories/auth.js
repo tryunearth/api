@@ -1,4 +1,4 @@
-const db = require('../database/config')
+const db = require('../config')
 
 const readUser = async userId => {
   return await db('user')

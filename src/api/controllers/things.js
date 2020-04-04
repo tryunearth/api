@@ -1,9 +1,4 @@
-const {
-  createThing,
-  browseThings,
-  updateThing,
-  removeThing,
-} = require('../../services/things-service')
+const { ThingsRepo } = require('../../database/repositories')
 
 const getThings = async (req, res, next) => {
   const user = { id: 'xmeax' }
@@ -12,7 +7,7 @@ const getThings = async (req, res, next) => {
   //        used to connect related resources
   // const { include } = req.query
 
-  const things = await browseThings(user.id)
+  const things = await ThingsRepo.browseThings(user.id)
   res.status(200).json({ things })
 }
 
@@ -21,7 +16,7 @@ const postThing = async (req, res, next) => {
   const data = req.body
   // check thing attributes here
 
-  const thing = await createThing(user.id, data)
+  const thing = await ThingsRepo.createThing(user.id, data)
   res.status(201).json({ thing })
   return next()
 }
@@ -49,7 +44,7 @@ const patchThing = async (req, res, next) => {
     }
   }
 
-  const updated = await updateThing(user.id, id, data)
+  const updated = await ThingsRepo.updateThing(user.id, id, data)
   if (!updated) {
     const error = {
       status: 404,
@@ -67,7 +62,7 @@ const deleteThing = async (req, res, next) => {
   const user = { id: 'xmeax' }
   const { id } = req.params
 
-  const deleted = await removeThing(user.id, id)
+  const deleted = await ThingsRepo.removeThing(user.id, id)
   if (!deleted) {
     const error = {
       status: 404,

@@ -1,12 +1,8 @@
-const {
-  readUser,
-  updateUser,
-  removeUser,
-} = require('../../services/auth-service')
+const { AuthRepo } = require('../../database/repositories')
 
 const getUser = async (req, res, next) => {
   const u = { id: 'xmeax' }
-  const user = await readUser(u.id)
+  const user = await AuthRepo.readUser(u.id)
   res.status(200).json({ user })
   return next()
 }
@@ -44,14 +40,14 @@ const patchUser = async (req, res, next) => {
     }
   }
 
-  await updateUser(u.id, data)
+  await AuthRepo.updateUser(u.id, data)
   res.status(204).end()
   return next()
 }
 
 const deleteUser = async (req, res, next) => {
   const u = { id: 'xmeax' }
-  await removeUser(u.id)
+  await AuthRepo.removeUser(u.id)
   res.status(204).end()
   return next()
 }

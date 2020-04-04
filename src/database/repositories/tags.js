@@ -1,4 +1,4 @@
-const db = require('../database/config')
+const db = require('../config')
 
 const readTagById = async (userId, id) => {
   return await db('tag')

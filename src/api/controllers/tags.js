@@ -1,9 +1,4 @@
-const {
-  createTag,
-  browseTags,
-  readTagById,
-  removeTag,
-} = require('../../services/tags-service')
+const { TagsRepo } = require('../../database/repositories')
 
 const getTag = async (req, res, next) => {
   // DEBUG
@@ -12,7 +7,7 @@ const getTag = async (req, res, next) => {
 
   const { id } = req.params
 
-  const tag = await readTagById(user.id, id)
+  const tag = await TagsRepo.readTagById(user.id, id)
   if (!tag) {
     const error = {
       status: 404,
@@ -31,7 +26,7 @@ const getTags = async (req, res, next) => {
   const user = { id: 'xmeax' }
   req.user = user
 
-  const tags = await browseTags(user.id)
+  const tags = await TagsRepo.browseTags(user.id)
   res.status(200).json({ tags })
   return next()
 }
@@ -53,7 +48,7 @@ const postTag = async (req, res, next) => {
     return next()
   }
 
-  const tag = await createTag(user.id, name)
+  const tag = await TagsRepo.createTag(user.id, name)
   res.status(201).json({ tag })
   return next()
 }
@@ -65,7 +60,7 @@ const deleteTag = async (req, res, next) => {
 
   const { id } = req.params
 
-  const deleted = await removeTag(user.id, id)
+  const deleted = await TagsRepo.removeTag(user.id, id)
   if (!deleted) {
     const error = {
       status: 404,
