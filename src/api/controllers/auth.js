@@ -1,10 +1,14 @@
+const {
+  SuccessResponse,
+  EmptySuccessResponse,
+} = require('../../core/api-response')
+const { BadRequestError } = require('../../core/api-error')
 const { AuthRepo } = require('../../database/repositories')
 
 const getUser = async (req, res, next) => {
   const u = { id: 'xmeax' }
   const user = await AuthRepo.readUser(u.id)
-  res.status(200).json({ user })
-  return next()
+  new SuccessResponse({ user }).send(res)
 }
 
 const patchUser = async (req, res, next) => {
@@ -21,13 +25,7 @@ const patchUser = async (req, res, next) => {
   //    - https://express-validator.github.io/docs/
   //    - https://github.com/validatorjs/validator.js
   if (!data || (!data.email && !data.frequency && !data.refresh_token)) {
-    const error = {
-      status: 400,
-      message:
-        'Missing or malformed request body. Fields qualified for updating: `email`, `frequency`, `refresh_token`',
-    }
-    res.status(error.status).json({ error })
-    return next()
+    throw new BadRequestError('Missing or malformed request body')
   }
 
   // remove all other attributes other than the updatable attributes
@@ -41,15 +39,13 @@ const patchUser = async (req, res, next) => {
   }
 
   await AuthRepo.updateUser(u.id, data)
-  res.status(204).end()
-  return next()
+  new EmptySuccessResponse().send(res)
 }
 
 const deleteUser = async (req, res, next) => {
   const u = { id: 'xmeax' }
   await AuthRepo.removeUser(u.id)
-  res.status(204).end()
-  return next()
+  new EmptySuccessResponse().send(res)
 }
 
 const oauthDance = async (req, res, next) => {

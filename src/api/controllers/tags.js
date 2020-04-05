@@ -1,3 +1,9 @@
+const {
+  SuccessResponse,
+  EmptySuccessResponse,
+  CreatedSuccessResponse,
+} = require('../../core/api-response')
+const { BadRequestError, NotFoundError } = require('../../core/api-error')
 const { TagsRepo } = require('../../database/repositories')
 
 const getTag = async (req, res, next) => {
@@ -9,16 +15,9 @@ const getTag = async (req, res, next) => {
 
   const tag = await TagsRepo.readTagById(user.id, id)
   if (!tag) {
-    const error = {
-      status: 404,
-      message:
-        'Could not find any tag with the given id associated with the authorized user.',
-    }
-    res.status(error.status).json({ error })
-    return next()
+    throw new NotFoundError('No tag found with the given id')
   }
-  res.status(200).json({ tag })
-  return next()
+  new SuccessResponse({ tag }).send(res)
 }
 
 const getTags = async (req, res, next) => {
@@ -27,8 +26,7 @@ const getTags = async (req, res, next) => {
   req.user = user
 
   const tags = await TagsRepo.browseTags(user.id)
-  res.status(200).json({ tags })
-  return next()
+  new SuccessResponse({ tags }).send(res)
 }
 
 const postTag = async (req, res, next) => {
@@ -37,20 +35,13 @@ const postTag = async (req, res, next) => {
   req.user = user
 
   const { name } = req.body
-
   if (!name || name.length > 32) {
-    const error = {
-      status: 400,
-      message:
-        'Field `name` is required and cannot be empty and must not exceed 32 characters.',
-    }
-    res.status(error.status).json({ error })
-    return next()
+    throw new BadRequestError(
+      '`name` required and must be between 1 - 32 characters',
+    )
   }
-
   const tag = await TagsRepo.createTag(user.id, name)
-  res.status(201).json({ tag })
-  return next()
+  new CreatedSuccessResponse({ tag }).send(res)
 }
 
 const deleteTag = async (req, res, next) => {
@@ -62,16 +53,9 @@ const deleteTag = async (req, res, next) => {
 
   const deleted = await TagsRepo.removeTag(user.id, id)
   if (!deleted) {
-    const error = {
-      status: 404,
-      message:
-        'Could not find any tag with the given id associated with the authorized user.',
-    }
-    res.status(error.status).json({ error })
-    return next()
+    throw new NotFoundError('No tag found with the given id')
   }
-  res.status(204).end()
-  return next()
+  new EmptySuccessResponse().send(res)
 }
 
 module.exports = {
