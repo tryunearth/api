@@ -66,6 +66,7 @@ exports.up = function(knex) {
         .integer('tag_id')
         .references('tag.id')
         .notNullable()
+        .onDelete('CASCADE')
       table.unique(['thing_id', 'tag_id'])
     })
 }
