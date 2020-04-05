@@ -15,7 +15,8 @@ app.use((err, req, res, next) => {
     APIError.handle(err, res)
   } else {
     // unknown/unexpected errors that may occur, e.g. malformed knex queries
-    APIError.handle(new InternalError(), res)
+    const message = process.env.NODE_ENV === 'production' ? undefined : err
+    APIError.handle(new InternalError(message), res)
   }
 })
 
