@@ -6,7 +6,7 @@
  *    the catch-all error handler.
  */
 const asyncHandler = execution => (req, res, next) => {
-  execution(req, res, next).catch(error => next(error.toString()))
+  execution(req, res, next).catch(next)
 }
 
 module.exports = asyncHandler

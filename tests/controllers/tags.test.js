@@ -9,8 +9,8 @@ describe('Tags Endpoint(s)', () => {
     })
     test('should return a `tag` object', async () => {
       const res = await request(app).get('/v1/tags/2')
-      expect(res.body).toHaveProperty('tag')
-      expect(typeof res.body.tag).toBe('object')
+      expect(res.body.payload).toHaveProperty('tag')
+      expect(typeof res.body.payload.tag).toBe('object')
     })
 
     test('should return HTTP 404 status code if not found', async () => {
@@ -32,8 +32,8 @@ describe('Tags Endpoint(s)', () => {
     })
     test('should return an array of tags', async () => {
       const res = await request(app).get('/v1/tags')
-      expect(res.body).toHaveProperty('tags')
-      expect(Array.isArray(res.body.tags)).toBeTruthy()
+      expect(res.body.payload).toHaveProperty('tags')
+      expect(Array.isArray(res.body.payload.tags)).toBeTruthy()
     })
   })
 })

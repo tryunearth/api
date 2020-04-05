@@ -1,3 +1,9 @@
+const {
+  SuccessResponse,
+  EmptySuccessResponse,
+  CreatedSuccessResponse,
+} = require('../../core/api-response')
+const { BadRequestError, NotFoundError } = require('../../core/api-error')
 const { ThingsRepo } = require('../../database/repositories')
 
 const getThings = async (req, res, next) => {
@@ -8,7 +14,7 @@ const getThings = async (req, res, next) => {
   // const { include } = req.query
 
   const things = await ThingsRepo.browseThings(user.id)
-  res.status(200).json({ things })
+  new SuccessResponse({ things }).send(res)
 }
 
 const postThing = async (req, res, next) => {
@@ -17,8 +23,7 @@ const postThing = async (req, res, next) => {
   // check thing attributes here
 
   const thing = await ThingsRepo.createThing(user.id, data)
-  res.status(201).json({ thing })
-  return next()
+  new CreatedSuccessResponse({ thing }).send(res)
 }
 
 const patchThing = async (req, res, next) => {
@@ -28,13 +33,7 @@ const patchThing = async (req, res, next) => {
 
   // request body does not meet endpoint constraints
   if (!data || typeof data.surfaced !== 'boolean') {
-    const error = {
-      status: 400,
-      message:
-        'Missing or malformed request body. Field `surfaced` is required!',
-    }
-    res.status(error.status).json({ error })
-    return next()
+    throw new BadRequestError('Missing or malformed request body')
   }
 
   // remove all other attributes other than `surfaced`
@@ -46,16 +45,9 @@ const patchThing = async (req, res, next) => {
 
   const updated = await ThingsRepo.updateThing(user.id, id, data)
   if (!updated) {
-    const error = {
-      status: 404,
-      message:
-        'Could not find any thing with the given id associated with the authorized user.',
-    }
-    res.status(error.status).json({ error })
-    return next()
+    throw new NotFoundError('No thing found with the given id')
   }
-  res.status(204).end()
-  return next()
+  new EmptySuccessResponse().send(res)
 }
 
 const deleteThing = async (req, res, next) => {
@@ -64,16 +56,9 @@ const deleteThing = async (req, res, next) => {
 
   const deleted = await ThingsRepo.removeThing(user.id, id)
   if (!deleted) {
-    const error = {
-      status: 404,
-      message:
-        'Could not find any thing with the given id associated with the authorized user.',
-    }
-    res.status(error.status).json({ error })
-    return next()
+    throw new NotFoundError('No thing found with the given id')
   }
-  res.status(204).end()
-  return next()
+  new EmptySuccessResponse().send(res)
 }
 
 module.exports = { getThings, postThing, patchThing, deleteThing }
