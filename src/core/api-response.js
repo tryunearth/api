@@ -65,6 +65,21 @@ class BadRequestResponse extends BaseErrorResponse {
   }
 }
 
+class UnauthorizedResponse extends BaseErrorResponse {
+  constructor(message) {
+    super(APIResponse.STATUS_CODE.UNAUTHORIZED, message)
+  }
+
+  /**
+   * HTTP 401's must contain the `WWW-Authenticate` header in the response
+   * per the spec: https://tools.ietf.org/html/rfc7235#section-4.1
+   */
+  send(res) {
+    res.set('WWW-Authenticate', 'Bearer realm="Unearth API"')
+    super.send(res)
+  }
+}
+
 class NotFoundResponse extends BaseErrorResponse {
   constructor(message) {
     super(APIResponse.STATUS_CODE.NOT_FOUND, message)
@@ -84,5 +99,6 @@ module.exports = {
 
   InternalErrorResponse,
   BadRequestResponse,
+  UnauthorizedResponse,
   NotFoundResponse,
 }
