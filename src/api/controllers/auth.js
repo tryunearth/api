@@ -6,13 +6,13 @@ const { BadRequestError } = require('../../core/api-error')
 const { AuthRepo } = require('../../database/repositories')
 
 const getUser = async (req, res, next) => {
-  const u = { id: 'xmeax' }
-  const user = await AuthRepo.readUser(u.id)
-  new SuccessResponse({ user }).send(res)
+  const { user } = res.locals
+  const u = await AuthRepo.readUser(user.id)
+  new SuccessResponse({ user: u }).send(res)
 }
 
 const patchUser = async (req, res, next) => {
-  const u = { id: 'xmeax' }
+  const { user } = res.locals
   const data = req.body
 
   // request body does not meet endpoint constraints,
@@ -38,13 +38,13 @@ const patchUser = async (req, res, next) => {
     }
   }
 
-  await AuthRepo.updateUser(u.id, data)
+  await AuthRepo.updateUser(user.id, data)
   new EmptySuccessResponse().send(res)
 }
 
 const deleteUser = async (req, res, next) => {
-  const u = { id: 'xmeax' }
-  await AuthRepo.removeUser(u.id)
+  const { user } = res.locals
+  await AuthRepo.removeUser(user.id)
   new EmptySuccessResponse().send(res)
 }
 

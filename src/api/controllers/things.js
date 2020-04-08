@@ -7,7 +7,7 @@ const { BadRequestError, NotFoundError } = require('../../core/api-error')
 const { ThingsRepo } = require('../../database/repositories')
 
 const getThings = async (req, res, next) => {
-  const user = { id: 'xmeax' }
+  const { user } = res.locals
 
   // TODO - handle include param (e.g. `?include=tags`)
   //        used to connect related resources
@@ -18,16 +18,15 @@ const getThings = async (req, res, next) => {
 }
 
 const postThing = async (req, res, next) => {
-  const user = { id: 'xmeax' }
+  const { user } = res.locals
   const data = req.body
-  // check thing attributes here
-
+  // TODO - check thing properties here
   const thing = await ThingsRepo.createThing(user.id, data)
   new CreatedSuccessResponse({ thing }).send(res)
 }
 
 const patchThing = async (req, res, next) => {
-  const user = { id: 'xmeax' }
+  const { user } = res.locals
   const { id } = req.params
   const data = req.body
 
@@ -51,9 +50,8 @@ const patchThing = async (req, res, next) => {
 }
 
 const deleteThing = async (req, res, next) => {
-  const user = { id: 'xmeax' }
+  const { user } = res.locals
   const { id } = req.params
-
   const deleted = await ThingsRepo.removeThing(user.id, id)
   if (!deleted) {
     throw new NotFoundError('No thing found with the given id')
