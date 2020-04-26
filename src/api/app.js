@@ -1,10 +1,12 @@
 require('dotenv').config()
 const express = require('express')
+const cors = require('cors')
 const baseRouter = require('./routes')
 const { APIError, InternalError } = require('../core/api-error')
 
 const app = express()
 
+app.use(cors())
 app.use(express.json())
 app.use('/v1', baseRouter)
 
