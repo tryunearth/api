@@ -12,8 +12,9 @@ const getThings = async (req, res, next) => {
   // TODO - handle include param (e.g. `?include=tags`)
   //        used to connect related resources
   // const { include } = req.query
+  const filters = req.query
 
-  const things = await ThingsRepo.browseThings(user.id)
+  const things = await ThingsRepo.browseThings(user.id, filters)
   new SuccessResponse({ things }).send(res)
 }
 

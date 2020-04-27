@@ -4,6 +4,7 @@ const {
   HealthCheckController,
   TagsController,
   ThingsController,
+  FiltersController,
 } = require('../controllers')
 const { JWT } = require('../../core/jwt')
 const asyncHandler = require('../helpers/async-handler')
@@ -40,5 +41,11 @@ router.get('/things', asyncHandler(ThingsController.getThings))
 router.post('/things', asyncHandler(ThingsController.postThing))
 router.patch('/things/:id', asyncHandler(ThingsController.patchThing))
 router.delete('/things/:id', asyncHandler(ThingsController.deleteThing))
+
+/**
+ * Filters
+ */
+router.use('/filters', JWT.authorize)
+router.get('/filters', asyncHandler(FiltersController.getFilters))
 
 module.exports = router
