@@ -1,9 +1,34 @@
+const axios = require('axios')
+const qs = require('querystring')
+
 const {
   SuccessResponse,
   EmptySuccessResponse,
 } = require('../../core/api-response')
+const { JWT } = require('../../core/jwt')
 const { BadRequestError } = require('../../core/api-error')
 const { AuthRepo } = require('../../database/repositories')
+
+/**
+ * Axios abstraction utility.
+ * TODO - move to `/utils` directory at some point in case of reuse.
+ * @param {*} url
+ * @param {*} method
+ * @param {*} options
+ */
+const fetch = async (
+  url,
+  method = 'GET',
+  options = { auth: {}, body: {}, headers: {} },
+) => {
+  const { data } = await axios({
+    url,
+    method,
+    data: options.body ? options.body : null,
+    ...options,
+  })
+  return data
+}
 
 const getUser = async (req, res, next) => {
   const { user } = res.locals
@@ -48,16 +73,62 @@ const deleteUser = async (req, res, next) => {
   new EmptySuccessResponse().send(res)
 }
 
+/**
+ * Endpoint for proxying client requests to Reddit's `/api/v1/access_token`
+ * endpoint. Used to mask Reddit API keys (specifically the secret) since those
+ * should not be used as environment variables in the client apps.
+ *
+ * References:
+ *  - https://www.rockyourcode.com/secret-keys-in-react/
+ *  - https://www.gatsbyjs.org/docs/environment-variables/#client-side-javascript
+ *  - https://create-react-app.dev/docs/adding-custom-environment-variables/
+ */
 const oauthDance = async (req, res, next) => {
-  /**
-   * 1. POST /api/v1/access_token
-   * 2. GET /api/v1/me
-   * 3. check if user exists in db:
-   *    a. True: return JWT
-   *    b. False:
-   *      - create user account
-   *      - return JWT
-   */
+  const { REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET } = process.env
+  const { grant_type, code, redirect_uri } = req.body
+
+  if (!grant_type || !code || !redirect_uri) {
+    throw new BadRequestError(
+      'Missing one or more of the following: grant_type, code, redirect_uri',
+    )
+  }
+
+  const body = qs.stringify(req.body)
+  const { access_token, refresh_token } = await fetch(
+    'https://www.reddit.com/api/v1/access_token',
+    'POST',
+    {
+      body,
+      auth: {
+        username: REDDIT_CLIENT_ID,
+        password: REDDIT_CLIENT_SECRET,
+      },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    },
+  )
+
+  const { id, username } = await fetch(
+    'https://oauth.reddit.com/api/v1/me',
+    'GET',
+    {
+      headers: {
+        Authorization: `bearer ${access_token}`,
+      },
+    },
+  )
+
+  let user = await AuthRepo.readUser(id)
+  if (!user) {
+    user = await AuthRepo.createUser({
+      id: id,
+      username: username,
+      refresh_token: refresh_token,
+    })
+  }
+  const token = new JWT(user).sign()
+  new SuccessResponse({ auth: { user, token } }).send(res)
 }
 
 module.exports = { getUser, patchUser, deleteUser, oauthDance }

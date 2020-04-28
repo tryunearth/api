@@ -17,7 +17,7 @@ router.get('/status', HealthCheckController.getStatus)
 /**
  * Auth
  */
-// router.post('/auth/login', asyncHandler(AuthController.oauthDance))
+router.post('/auth/login', asyncHandler(AuthController.oauthDance))
 
 router.use('/auth/me', JWT.authorize)
 router.get('/auth/me', asyncHandler(AuthController.getUser))
