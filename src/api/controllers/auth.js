@@ -126,6 +126,9 @@ const oauthDance = async (req, res, next) => {
       username: username,
       refresh_token: refresh_token,
     })
+  } else {
+    await AuthRepo.updateUser(id, { refresh_token })
+    user = await AuthRepo.readUser(id)
   }
   const token = new JWT(user).sign()
   new SuccessResponse({ auth: { user, token } }).send(res)

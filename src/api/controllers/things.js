@@ -4,7 +4,7 @@ const {
   CreatedSuccessResponse,
 } = require('../../core/api-response')
 const { BadRequestError, NotFoundError } = require('../../core/api-error')
-const { ThingsRepo } = require('../../database/repositories')
+const { ThingsRepo, RedditRepo } = require('../../database/repositories')
 
 const getThings = async (req, res, next) => {
   const { user } = res.locals
@@ -60,4 +60,10 @@ const deleteThing = async (req, res, next) => {
   new EmptySuccessResponse().send(res)
 }
 
-module.exports = { getThings, postThing, patchThing, deleteThing }
+const syncThings = async (req, res, next) => {
+  const { user } = res.locals
+  await RedditRepo.fetchAllSaves(user)
+  new EmptySuccessResponse().send(res)
+}
+
+module.exports = { getThings, postThing, patchThing, deleteThing, syncThings }

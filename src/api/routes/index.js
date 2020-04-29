@@ -48,4 +48,10 @@ router.delete('/things/:id', asyncHandler(ThingsController.deleteThing))
 router.use('/filters', JWT.authorize)
 router.get('/filters', asyncHandler(FiltersController.getFilters))
 
+/**
+ * Reddit-specific
+ */
+router.use('/reddit', JWT.authorize)
+router.get('/reddit/sync', asyncHandler(ThingsController.syncThings))
+
 module.exports = router
