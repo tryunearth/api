@@ -109,7 +109,7 @@ const oauthDance = async (req, res, next) => {
     },
   )
 
-  const { id, username } = await fetch(
+  const { id, username, icon_img } = await fetch(
     'https://oauth.reddit.com/api/v1/me',
     'GET',
     {
@@ -119,15 +119,22 @@ const oauthDance = async (req, res, next) => {
     },
   )
 
+  /**
+   * Some URLs provided by Reddit contain the HTML entity for '&' (aka '&amp;')
+   * and do not work, so we must clean them up.
+   */
+  const avatar_img = icon_img.replace(/(amp;)/gi, '')
+
   let user = await AuthRepo.readUser(id)
   if (!user) {
     user = await AuthRepo.createUser({
       id: id,
       username: username,
       refresh_token: refresh_token,
+      avatar_img,
     })
   } else {
-    await AuthRepo.updateUser(id, { refresh_token })
+    await AuthRepo.updateUser(id, { refresh_token, avatar_img })
     user = await AuthRepo.readUser(id)
   }
   const token = new JWT(user).sign()
