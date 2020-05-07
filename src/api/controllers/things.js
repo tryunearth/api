@@ -3,8 +3,16 @@ const {
   EmptySuccessResponse,
   CreatedSuccessResponse,
 } = require('../../core/api-response')
-const { BadRequestError, NotFoundError } = require('../../core/api-error')
-const { ThingsRepo, RedditRepo } = require('../../database/repositories')
+const {
+  BadRequestError,
+  NotFoundError,
+  TooManyRequestsError,
+} = require('../../core/api-error')
+const {
+  AuthRepo,
+  ThingsRepo,
+  RedditRepo,
+} = require('../../database/repositories')
 
 const getThings = async (req, res, next) => {
   const { user } = res.locals
@@ -60,10 +68,45 @@ const deleteThing = async (req, res, next) => {
   new EmptySuccessResponse().send(res)
 }
 
+/**
+ * Utility function to check whether or not a given timestamp is within the
+ * range of now minus one hour. Used to restrict the number of Reddit syncs.
+ * @param {Number} lastSyncTime Integer representing a Unix timestamp in seconds.
+ * @returns {Object} Object minimally containing an `isAllowed` property
+ *            of type Boolean denoting whether or not syncing should continue.
+ *            If not, then a second property `retryAfter` is also provided to be
+ *            sent along in the header of the HTTP 429 status code.
+ */
+const isAllowedToSync = (lastSyncTime) => {
+  const ONE_HOUR_SECS = 60 * 60 * 1
+  const ONE_HOUR_PREV_PERIOD = Math.round(Date.now() / 1000) - ONE_HOUR_SECS
+  const status = {}
+  if (lastSyncTime <= ONE_HOUR_PREV_PERIOD) {
+    status['isAllowed'] = true
+  } else {
+    status['isAllowed'] = false
+    status['retryAfter'] = lastSyncTime - ONE_HOUR_PREV_PERIOD
+  }
+  return status
+}
+
 const syncThings = async (req, res, next) => {
   const { user } = res.locals
-  await RedditRepo.fetchAllSaves(user)
-  new EmptySuccessResponse().send(res)
+  if (!user.has_completed_onboarding) {
+    await RedditRepo.fetchAllSaves(user, { initialSync: true })
+    new EmptySuccessResponse().send(res)
+  }
+
+  const userSyncStatus = isAllowedToSync(user.last_sync_time)
+  if (userSyncStatus.isAllowed) {
+    const parity = await RedditRepo.fetchAllSaves(user)
+    new SuccessResponse({ parity }).send(res)
+  } else {
+    throw new TooManyRequestsError(
+      'Cannot sync at this time, try again later',
+      userSyncStatus['retryAfter'],
+    )
+  }
 }
 
 module.exports = { getThings, postThing, patchThing, deleteThing, syncThings }

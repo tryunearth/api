@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const { UnauthorizedError } = require('./api-error')
 const asyncHandler = require('../api/helpers/async-handler')
+const { AuthRepo } = require('../database/repositories')
 
 const SECRET = process.env.SECRET || 'some-secret-key'
 
@@ -38,11 +39,12 @@ class JWT {
     if (!token) {
       throw new UnauthorizedError('Missing token from `Authorization` header')
     }
-    jwt.verify(token, SECRET, (error, decoded) => {
+    await jwt.verify(token, SECRET, async (error, decoded) => {
       if (error) {
         throw new UnauthorizedError(`[${error.name}] ${error.message}`)
       } else {
-        res.locals.user = decoded
+        const user = await AuthRepo.readUser(decoded.id)
+        res.locals.user = user
         return next()
       }
     })

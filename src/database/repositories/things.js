@@ -26,6 +26,49 @@ const createThing = async (userId, data) => {
   return await readThingById(userId, id)
 }
 
+const batchCreateThing = async (userId, data) => {
+  let things = []
+
+  if (Array.isArray(data)) {
+    things = [...data]
+  } else {
+    things.push(data)
+  }
+
+  await db('thing').insert(
+    things.map((thing) => {
+      const isUrl = new RegExp(/htt(p|ps):\/\//)
+      const isComment = new RegExp(/^t1_\w+/)
+      const hasPreviewImage =
+        thing.thumbnail && thing.thumbnail !== 'self' ? true : false
+
+      return {
+        id: thing.id,
+        subreddit: thing.subreddit.display_name,
+        selftext: thing.selftext,
+        author_fullname: thing.author_fullname,
+        title: isComment.test(thing.name) ? thing.link_title : thing.title,
+        subreddit_name_prefixed: thing.subreddit_name_prefixed,
+        name: isComment.test(thing.name) ? 'comment' : 'post',
+        category: thing.category,
+        score: thing.score,
+        thumbnail: hasPreviewImage
+          ? thing.preview && isUrl.test(thing.preview.images[0].source.url)
+            ? thing.preview.images[0].source.url
+            : thing.thumbnail
+          : null,
+        over_18: thing.over_18,
+        author: thing.author.name,
+        permalink: thing.permalink,
+        url: thing.url,
+        created_utc: thing.created_utc,
+        surfaced: false,
+        user_id: userId,
+      }
+    }),
+  )
+}
+
 const updateThing = async (userId, id, updates) => {
   const numRowsUpdated = await db('thing')
     .where({ id, user_id: userId })
@@ -44,6 +87,7 @@ const removeThing = async (userId, id) => {
 
 module.exports = {
   createThing,
+  batchCreateThing,
   browseThings,
   updateThing,
   removeThing,

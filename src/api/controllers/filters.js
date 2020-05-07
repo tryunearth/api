@@ -1,5 +1,4 @@
 const { SuccessResponse } = require('../../core/api-response')
-const { BadRequestError } = require('../../core/api-error')
 const { FiltersRepo } = require('../../database/repositories')
 
 const getFilters = async (req, res, next) => {
