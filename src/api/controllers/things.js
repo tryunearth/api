@@ -94,7 +94,8 @@ const syncThings = async (req, res, next) => {
   const { user } = res.locals
   if (!user.has_completed_onboarding) {
     await RedditRepo.fetchAllSaves(user, { initialSync: true })
-    new EmptySuccessResponse().send(res)
+    const updatedUser = await AuthRepo.readUser(user.id)
+    return new SuccessResponse({ user: updatedUser }).send(res)
   }
 
   const userSyncStatus = isAllowedToSync(user.last_sync_time)

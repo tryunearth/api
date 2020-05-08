@@ -4,7 +4,7 @@ const readThingById = async (userId, id) => {
   return await db('thing').where({ id, user_id: userId }).first()
 }
 
-const browseThings = async (userId, filters) => {
+const browseThings = async (userId, filters = {}) => {
   if (filters.tag) {
     return await db
       .select('thing.*')
