@@ -100,6 +100,7 @@ class TooManyRequestsResponse extends BaseErrorResponse {
    */
   send(res, retryAfter) {
     res.set('Retry-After', retryAfter)
+    res.set('Access-Control-Expose-Headers', 'Retry-After')
     super.send(res)
   }
 }

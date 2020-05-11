@@ -101,7 +101,8 @@ const syncThings = async (req, res, next) => {
   const userSyncStatus = isAllowedToSync(user.last_sync_time)
   if (userSyncStatus.isAllowed) {
     const parity = await RedditRepo.fetchAllSaves(user)
-    new SuccessResponse({ parity }).send(res)
+    const updatedUser = await AuthRepo.readUser(user.id)
+    new SuccessResponse({ parity, user: updatedUser }).send(res)
   } else {
     throw new TooManyRequestsError(
       'Cannot sync at this time, try again later',
