@@ -3,6 +3,7 @@ const {
   BadRequestResponse,
   UnauthorizedResponse,
   NotFoundResponse,
+  TooManyRequestsResponse,
 } = require('./api-response')
 
 class APIError extends Error {
@@ -24,6 +25,11 @@ class APIError extends Error {
         return new UnauthorizedResponse(error.message).send(res)
       case APIError.ERROR_TYPE.NOT_FOUND:
         return new NotFoundResponse(error.message).send(res)
+      case APIError.ERROR_TYPE.TOO_MANY_REQUESTS:
+        return new TooManyRequestsResponse(error.message).send(
+          res,
+          error.retryAfter,
+        )
       case APIError.ERROR_TYPE.INTERNAL:
       default:
         let { message } = error
@@ -39,6 +45,7 @@ APIError.ERROR_TYPE = {
   BAD_REQUEST: 'BadRequestError',
   UNAUTHORIZED: 'UnauthorizedError',
   NOT_FOUND: 'NotFoundError',
+  TOO_MANY_REQUESTS: 'TooManyRequestsError',
 
   INTERNAL: 'InternalError',
 }
@@ -61,6 +68,13 @@ class NotFoundError extends APIError {
   }
 }
 
+class TooManyRequestsError extends APIError {
+  constructor(message = 'Too many attempts, retry later', retryAfter) {
+    super(APIError.ERROR_TYPE.TOO_MANY_REQUESTS, message)
+    this.retryAfter = retryAfter
+  }
+}
+
 class InternalError extends APIError {
   constructor(message = '') {
     super(APIError.ERROR_TYPE.INTERNAL, message)
@@ -73,4 +87,5 @@ module.exports = {
   BadRequestError,
   UnauthorizedError,
   NotFoundError,
+  TooManyRequestsError,
 }

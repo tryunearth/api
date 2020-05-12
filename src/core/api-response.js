@@ -26,6 +26,7 @@ APIResponse.STATUS_CODE = {
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   NOT_FOUND: 404,
+  TOO_MANY_REQUESTS: 429,
 
   INTERNAL_ERROR: 500,
 }
@@ -86,6 +87,24 @@ class NotFoundResponse extends BaseErrorResponse {
   }
 }
 
+class TooManyRequestsResponse extends BaseErrorResponse {
+  constructor(message) {
+    super(APIResponse.STATUS_CODE.TOO_MANY_REQUESTS, message)
+  }
+
+  /**
+   * HTTP 429's should contain the `Retry-After` header in the response, per the
+   * spec: https://tools.ietf.org/html/rfc6585#section-4
+   * @param {Number} retryAfter Integer denoting how many seconds to wait before
+   *                            making a follow-up request.
+   */
+  send(res, retryAfter) {
+    res.set('Retry-After', retryAfter)
+    res.set('Access-Control-Expose-Headers', 'Retry-After')
+    super.send(res)
+  }
+}
+
 class InternalErrorResponse extends BaseErrorResponse {
   constructor(message) {
     super(APIResponse.STATUS_CODE.INTERNAL_ERROR, message)
@@ -101,4 +120,5 @@ module.exports = {
   BadRequestResponse,
   UnauthorizedResponse,
   NotFoundResponse,
+  TooManyRequestsResponse,
 }

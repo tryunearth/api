@@ -1,8 +1,10 @@
 const snoowrap = require('snoowrap')
-
+const differenceWith = require('lodash.differencewith')
 const db = require('../../database/config')
+const AuthRepo = require('./auth')
+const ThingRepo = require('./things')
 
-const fetchAllSaves = async (user) => {
+const fetchAllSaves = async (user, options = { initialSync: false }) => {
   const r = new snoowrap({
     refreshToken: user.refresh_token,
     userAgent: process.env.REDDIT_USER_AGENT,
@@ -15,38 +17,33 @@ const fetchAllSaves = async (user) => {
     .getSavedContent()
     .fetchAll({ skipReplies: true })
 
-  await db('thing').insert(
-    saves.map((save) => {
-      const isUrl = new RegExp(/htt(p|ps):\/\//)
-      const isComment = new RegExp(/^t1_\w+/)
-      const hasPreviewImage =
-        save.thumbnail && save.thumbnail !== 'self' ? true : false
+  await AuthRepo.updateUser(user.id, { last_sync_time: db.raw('DEFAULT') })
 
-      return {
-        id: save.id,
-        subreddit: save.subreddit.display_name,
-        selftext: save.selftext,
-        author_fullname: save.author_fullname,
-        title: isComment.test(save.name) ? save.link_title : save.title,
-        subreddit_name_prefixed: save.subreddit_name_prefixed,
-        name: isComment.test(save.name) ? 'comment' : 'post',
-        category: save.category,
-        score: save.score,
-        thumbnail: hasPreviewImage
-          ? save.preview && isUrl.test(save.preview.images[0].source.url)
-            ? save.preview.images[0].source.url
-            : save.thumbnail
-          : null,
-        over_18: save.over_18,
-        author: save.author.name,
-        permalink: save.permalink,
-        url: save.url,
-        created_utc: save.created_utc,
-        surfaced: false,
-        user_id: user.id,
-      }
-    }),
-  )
+  if (options.initialSync) {
+    await ThingRepo.batchCreateThing(user.id, saves)
+    await AuthRepo.updateUser(user.id, { has_completed_onboarding: true })
+  } else {
+    const currentSaves = await db
+      .select('id')
+      .from('thing')
+      .where({ user_id: user.id })
+
+    const comparator = (arrVal, othVal) => arrVal.id === othVal.id
+
+    const removed = differenceWith(currentSaves, saves, comparator)
+    const added = differenceWith(saves, currentSaves, comparator)
+
+    await db('thing')
+      .where({ user_id: user.id })
+      .whereIn(
+        'id',
+        removed.map((thing) => thing.id),
+      )
+      .delete()
+
+    await ThingRepo.batchCreateThing(user.id, added)
+    return { removed: removed.length, added: added.length }
+  }
 }
 
 module.exports = { fetchAllSaves }
