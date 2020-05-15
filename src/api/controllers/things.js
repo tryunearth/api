@@ -1,3 +1,4 @@
+const differenceWith = require('lodash.differencewith')
 const {
   SuccessResponse,
   EmptySuccessResponse,
@@ -12,6 +13,7 @@ const {
   AuthRepo,
   ThingsRepo,
   RedditRepo,
+  TagsRepo,
 } = require('../../database/repositories')
 
 const getThings = async (req, res, next) => {
@@ -111,4 +113,59 @@ const syncThings = async (req, res, next) => {
   }
 }
 
-module.exports = { getThings, postThing, patchThing, deleteThing, syncThings }
+const manageTags = async (req, res, next) => {
+  const { user } = res.locals
+  const thingId = req.params.id
+  const tags = req.body
+
+  if (tags.length === 0) {
+    await TagsRepo.unlinkTagsFromThing(thingId)
+    return new EmptySuccessResponse().send(res)
+  }
+
+  const existingTags = await TagsRepo.browseLinkedTags(thingId)
+
+  const tagsWithId = []
+  for (tag of tags) {
+    const t = await TagsRepo.readTagByName(user.id, tag)
+    tagsWithId.push(t)
+  }
+
+  const removed = differenceWith(
+    existingTags,
+    tagsWithId,
+    (a, b) => a.tag_id === b.id,
+  )
+
+  for (tag of removed) {
+    await TagsRepo.unlinkTagFromThing(tag.tag_id, thingId)
+  }
+
+  // adding tags to things
+  for (tag of tags) {
+    const existingTag = await TagsRepo.readTagByName(user.id, tag)
+    if (existingTag) {
+      const tagIsLinked = await TagsRepo.checkIfLinkedToThing(
+        existingTag.id,
+        thingId,
+      )
+
+      if (!tagIsLinked) {
+        await TagsRepo.linkTagToThing(existingTag.id, thingId)
+      }
+    } else {
+      await TagsRepo.createTag(user.id, tag, thingId)
+    }
+  }
+
+  new EmptySuccessResponse().send(res)
+}
+
+module.exports = {
+  getThings,
+  postThing,
+  patchThing,
+  deleteThing,
+  syncThings,
+  manageTags,
+}

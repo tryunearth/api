@@ -4,7 +4,28 @@ const readThingById = async (userId, id) => {
   return await db('thing').where({ id, user_id: userId }).first()
 }
 
-const browseThings = async (userId, filters = {}) => {
+const browseThings = async (userId, filters) => {
+  if (filters.include === 'tags') {
+    delete filters['include']
+    for (key of Object.keys(filters)) {
+      if (key === 'tag') {
+        filters[`tag.name`] = filters[key]
+      } else {
+        filters[`thing.${key}`] = filters[key]
+      }
+      delete filters[key]
+    }
+
+    return await db
+      .select(
+        db.raw('thing.*, array_remove(array_agg(tag.name), NULL) as tags'),
+      )
+      .from('thing')
+      .leftJoin('thing_tag', 'thing.id', 'thing_tag.thing_id')
+      .leftJoin('tag', 'thing_tag.tag_id', 'tag.id')
+      .where({ 'thing.user_id': userId, ...filters })
+      .groupBy('thing.id', 'thing.user_id')
+  }
   if (filters.tag) {
     return await db
       .select('thing.*')
