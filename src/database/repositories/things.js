@@ -4,14 +4,51 @@ const readThingById = async (userId, id) => {
   return await db('thing').where({ id, user_id: userId }).first()
 }
 
-const browseThings = async (userId, filters = {}) => {
-  if (filters.tag) {
-    return await db
-      .select('thing.*')
-      .from('thing')
-      .innerJoin('thing_tag', 'thing.id', 'thing_tag.thing_id')
-      .innerJoin('tag', 'thing_tag.tag_id', 'tag.id')
-      .where({ 'thing.user_id': userId, 'tag.name': filters.tag })
+const browseThings = async (userId, filters) => {
+  if (filters.include === 'tags') {
+    delete filters['include']
+    for (key of Object.keys(filters)) {
+      if (key === 'tag') {
+        filters[`tag.name`] = filters[key]
+      } else {
+        filters[`thing.${key}`] = filters[key]
+      }
+      delete filters[key]
+    }
+
+    const subquery = db.raw(
+      `SELECT thing.id\n` +
+        `FROM thing\n` +
+        `LEFT JOIN thing_tag ON thing.id = thing_tag.thing_id\n` +
+        `LEFT JOIN tag ON thing_tag.tag_id = tag.id\n` +
+        `WHERE thing.user_id = ?\n` +
+        `AND tag.name = ?\n` +
+        `GROUP BY thing.id, thing.user_id`,
+      [userId, filters['tag.name']],
+    )
+
+    if (filters['tag.name']) {
+      return await db
+        .select(
+          db.raw('thing.*, array_remove(array_agg(tag.name), NULL) as tags'),
+        )
+        .from('thing')
+        .leftJoin('thing_tag', 'thing.id', 'thing_tag.thing_id')
+        .leftJoin('tag', 'thing_tag.tag_id', 'tag.id')
+        .whereIn('thing.id', subquery)
+        .groupBy('thing.id', 'thing.user_id')
+    } else {
+      delete filters['tag.name']
+      return await db
+        .select(
+          db.raw('thing.*, array_remove(array_agg(tag.name), NULL) as tags'),
+        )
+        .from('thing')
+        .leftJoin('thing_tag', 'thing.id', 'thing_tag.thing_id')
+        .leftJoin('tag', 'thing_tag.tag_id', 'tag.id')
+        .where({ 'thing.user_id': userId, ...filters })
+        .groupBy('thing.id', 'thing.user_id')
+    }
   }
   return await db('thing').where({ user_id: userId, ...filters })
 }

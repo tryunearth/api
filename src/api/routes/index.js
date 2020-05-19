@@ -42,6 +42,8 @@ router.post('/things', asyncHandler(ThingsController.postThing))
 router.patch('/things/:id', asyncHandler(ThingsController.patchThing))
 router.delete('/things/:id', asyncHandler(ThingsController.deleteThing))
 
+router.patch('/things/:id/tags', asyncHandler(ThingsController.manageTags))
+
 /**
  * Filters
  */
