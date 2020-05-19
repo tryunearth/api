@@ -123,16 +123,21 @@ const manageTags = async (req, res, next) => {
     return new EmptySuccessResponse().send(res)
   }
 
-  const existingTags = await TagsRepo.browseLinkedTags(thingId)
-
   const tagsWithId = []
   for (tag of tags) {
-    const t = await TagsRepo.readTagByName(user.id, tag)
-    tagsWithId.push(t)
+    const existingTag = await TagsRepo.readTagByName(user.id, tag)
+    if (existingTag) {
+      tagsWithId.push(existingTag)
+    } else {
+      const newLinkedTag = await TagsRepo.createTag(user.id, tag, thingId)
+      tagsWithId.push(newLinkedTag)
+    }
   }
 
+  const linkedTags = await TagsRepo.browseLinkedTags(thingId)
+
   const removed = differenceWith(
-    existingTags,
+    linkedTags,
     tagsWithId,
     (a, b) => a.tag_id === b.id,
   )
@@ -141,20 +146,10 @@ const manageTags = async (req, res, next) => {
     await TagsRepo.unlinkTagFromThing(tag.tag_id, thingId)
   }
 
-  // adding tags to things
-  for (tag of tags) {
-    const existingTag = await TagsRepo.readTagByName(user.id, tag)
-    if (existingTag) {
-      const tagIsLinked = await TagsRepo.checkIfLinkedToThing(
-        existingTag.id,
-        thingId,
-      )
-
-      if (!tagIsLinked) {
-        await TagsRepo.linkTagToThing(existingTag.id, thingId)
-      }
-    } else {
-      await TagsRepo.createTag(user.id, tag, thingId)
+  for (tag of tagsWithId) {
+    const hasLinkToThing = await TagsRepo.checkIfLinkedToThing(tag.id, thingId)
+    if (!hasLinkToThing) {
+      await TagsRepo.linkTagToThing(tag.id, thingId)
     }
   }
 
