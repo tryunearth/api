@@ -67,6 +67,7 @@ const deleteThing = async (req, res, next) => {
   if (!deleted) {
     throw new NotFoundError('No thing found with the given id')
   }
+  await RedditRepo.unsaveThing(user, id)
   new EmptySuccessResponse().send(res)
 }
 

@@ -46,4 +46,14 @@ const fetchAllSaves = async (user, options = { initialSync: false }) => {
   }
 }
 
-module.exports = { fetchAllSaves }
+const unsaveThing = async (user, thingId) => {
+  const r = new snoowrap({
+    refreshToken: user.refresh_token,
+    userAgent: process.env.REDDIT_USER_AGENT,
+    clientId: process.env.REDDIT_CLIENT_ID,
+    clientSecret: process.env.REDDIT_CLIENT_SECRET,
+  })
+  await r.getSubmission(thingId).unsave()
+}
+
+module.exports = { fetchAllSaves, unsaveThing }
