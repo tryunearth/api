@@ -63,11 +63,17 @@ const patchThing = async (req, res, next) => {
 const deleteThing = async (req, res, next) => {
   const { user } = res.locals
   const { id } = req.params
-  const deleted = await ThingsRepo.removeThing(user.id, id)
-  if (!deleted) {
+  const thing = await ThingsRepo.readThingById(user.id, id)
+
+  if (!thing) {
     throw new NotFoundError('No thing found with the given id')
   }
-  await RedditRepo.unsaveThing(user, id)
+
+  await ThingsRepo.removeThing(user.id, id)
+  await RedditRepo.unsaveThing(
+    user,
+    thing.name === 'comment' ? `t1_${id}` : `t3_${id}`,
+  )
   new EmptySuccessResponse().send(res)
 }
 

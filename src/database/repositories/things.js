@@ -123,6 +123,7 @@ const removeThing = async (userId, id) => {
 }
 
 module.exports = {
+  readThingById,
   createThing,
   batchCreateThing,
   browseThings,

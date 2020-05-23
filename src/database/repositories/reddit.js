@@ -46,14 +46,20 @@ const fetchAllSaves = async (user, options = { initialSync: false }) => {
   }
 }
 
-const unsaveThing = async (user, thingId) => {
+/**
+ * `fullname`[0] is used because using just the `id` of the thing was causing
+ * HTTP 400 Bad Request errors when trying to delete comments.
+ *
+ * [0]: https://www.reddit.com/dev/api/oauth#fullnames
+ */
+const unsaveThing = async (user, fullname) => {
   const r = new snoowrap({
     refreshToken: user.refresh_token,
     userAgent: process.env.REDDIT_USER_AGENT,
     clientId: process.env.REDDIT_CLIENT_ID,
     clientSecret: process.env.REDDIT_CLIENT_SECRET,
   })
-  await r.getSubmission(thingId).unsave()
+  await r.getSubmission(fullname).unsave()
 }
 
 module.exports = { fetchAllSaves, unsaveThing }
