@@ -127,12 +127,13 @@ const oauthDance = async (req, res, next) => {
 
   let user = await AuthRepo.readUser(id)
   if (!user) {
-    user = await AuthRepo.createUser({
+    const [newUser] = await AuthRepo.createUser({
       id: id,
       username: name,
       refresh_token: refresh_token,
       avatar_img,
     })
+    user = newUser
   } else {
     await AuthRepo.updateUser(id, { refresh_token, avatar_img })
     user = await AuthRepo.readUser(id)

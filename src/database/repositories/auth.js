@@ -5,7 +5,7 @@ const readUser = async (userId) => {
 }
 
 const createUser = async (data) => {
-  await db('user').insert(data).returning('*')
+  return await db('user').insert(data, ['*'])
 }
 
 const updateUser = async (userId, updates) => {
