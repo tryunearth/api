@@ -24,7 +24,7 @@
   "scripts": {
     "test": "NODE_ENV=development jest --runInBand",
     "test:watch": "yarn test --watch-all",
-    "start": "node src/index.js",
+    "start": "NODE_ENV=production node src/index.js",
     "dev": "nodemon src/index.js",
     "db": "node_modules/.bin/knex",
     "db:rollback": "yarn db migrate:rollback --all",

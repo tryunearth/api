@@ -1,24 +1,11 @@
 const db = require('../config')
 
 const readUser = async (userId) => {
-  return await db('user')
-    .columns(
-      process.env.NODE_ENV === 'production'
-        ? ['id', 'username', 'avatar_img']
-        : '*',
-    )
-    .where({ id: userId })
-    .first()
+  return await db('user').where({ id: userId }).first()
 }
 
 const createUser = async (data) => {
-  await db('user')
-    .insert(data)
-    .returning(
-      process.env.NODE_ENV === 'production'
-        ? ['id', 'username', 'avatar_img']
-        : '*',
-    )
+  await db('user').insert(data).returning('*')
 }
 
 const updateUser = async (userId, updates) => {
