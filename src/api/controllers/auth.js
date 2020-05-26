@@ -109,7 +109,7 @@ const oauthDance = async (req, res, next) => {
     },
   )
 
-  const { id, username, icon_img } = await fetch(
+  const { id, name, icon_img } = await fetch(
     'https://oauth.reddit.com/api/v1/me',
     'GET',
     {
@@ -129,7 +129,7 @@ const oauthDance = async (req, res, next) => {
   if (!user) {
     user = await AuthRepo.createUser({
       id: id,
-      username: username,
+      username: name,
       refresh_token: refresh_token,
       avatar_img,
     })
