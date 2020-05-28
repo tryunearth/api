@@ -64,7 +64,8 @@ const patchUser = async (req, res, next) => {
   }
 
   await AuthRepo.updateUser(user.id, data)
-  new EmptySuccessResponse().send(res)
+  const updatedUser = await AuthRepo.readUser(user.id)
+  new SuccessResponse({ user: updatedUser }).send(res)
 }
 
 const deleteUser = async (req, res, next) => {
