@@ -5,6 +5,9 @@ const readThingById = async (userId, id) => {
 }
 
 const browseThings = async (userId, filters) => {
+  const sortBy = filters.sort || 'desc'
+  delete filters['sort']
+
   if (filters.include === 'tags') {
     delete filters['include']
     for (key of Object.keys(filters)) {
@@ -37,6 +40,7 @@ const browseThings = async (userId, filters) => {
         .leftJoin('tag', 'thing_tag.tag_id', 'tag.id')
         .whereIn('thing.id', subquery)
         .groupBy('thing.id', 'thing.user_id')
+        .orderBy('thing.created_utc', sortBy)
     } else {
       delete filters['tag.name']
       return await db
@@ -48,9 +52,12 @@ const browseThings = async (userId, filters) => {
         .leftJoin('tag', 'thing_tag.tag_id', 'tag.id')
         .where({ 'thing.user_id': userId, ...filters })
         .groupBy('thing.id', 'thing.user_id')
+        .orderBy('thing.created_utc', sortBy)
     }
   }
-  return await db('thing').where({ user_id: userId, ...filters })
+  return await db('thing')
+    .where({ user_id: userId, ...filters })
+    .orderBy('created_utc', sortBy)
 }
 
 const createThing = async (userId, data) => {
