@@ -5,6 +5,9 @@ const readThingById = async (userId, id) => {
 }
 
 const browseThings = async (userId, filters) => {
+  const query = filters.q
+  delete filters['q']
+
   const sortBy = filters.sort || 'desc'
   delete filters['sort']
 
@@ -51,6 +54,13 @@ const browseThings = async (userId, filters) => {
         .leftJoin('thing_tag', 'thing.id', 'thing_tag.thing_id')
         .leftJoin('tag', 'thing_tag.tag_id', 'tag.id')
         .where({ 'thing.user_id': userId, ...filters })
+        .andWhere(
+          db.raw(
+            query
+              ? `to_tsvector(coalesce(selftext, '') || ' ' || title) @@ phraseto_tsquery('${query}')`
+              : 'TRUE',
+          ),
+        )
         .groupBy('thing.id', 'thing.user_id')
         .orderBy('thing.created_utc', sortBy)
     }
